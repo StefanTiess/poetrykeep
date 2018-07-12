@@ -80,7 +80,7 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
 
 
         Resources res = getResources();
-        SpinnerAdapter languageAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, res.getStringArray(R.array.languages));
+        SpinnerAdapter languageAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, res.getStringArray(R.array.languages));
         editLanguague.setAdapter(languageAdapter);
 
         //set Clicklisteners

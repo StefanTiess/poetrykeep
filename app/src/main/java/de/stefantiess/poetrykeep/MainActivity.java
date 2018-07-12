@@ -23,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -85,26 +86,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
-    private void displayDatabaseInfo() {
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
 
-        // Create and/or open a database to read from it
-        SQLiteDatabase db = poemsHelper.getReadableDatabase();
-
-        // Perform this raw SQL query "SELECT * FROM pets"
-        // to get a Cursor that contains all rows from the pets table.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + PoemEntry.TABLE_NAME, null);
-        try {
-            // Display the number of rows in the Cursor (which reflects the number of rows in the
-            // pets table in the database).
-           Log.v("DB Info", "Number of rows in pets database table: " + cursor.getCount());
-        } finally {
-            // Always close the cursor when you're done reading from it. This releases all its
-            // resources and makes it invalid.
-            cursor.close();
-        }
-    }
 
     private void insertDummyData() {
 
@@ -136,8 +118,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         reisen.put(PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME, PoemEntry.LANGUAGE_GERMAN);
 
         Uri newUri = getContentResolver().insert(PoemEntry.CONTENT_URI, reisen);
-
-        displayDatabaseInfo();
+        if (newUri != null) {
+            Toast.makeText(this, "Test Poem Created", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void populateLatestPoemsList() {
