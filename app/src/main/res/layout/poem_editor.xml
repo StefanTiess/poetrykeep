@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:isScrollContainer="true"
+    android:scrollbars="vertical"
+    android:theme="@style/AppTheme"
+    tools:context=".PoemEditor">
+
+
+    <AutoCompleteTextView
+        android:id="@+id/editAuthor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_alignParentStart="true"
+        android:hint="@string/author_hint"
+        android:inputType="text"
+        android:textStyle="italic"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/editTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_below="@id/editAuthor"
+        android:hint="@string/title_hint"
+        android:inputType="text"
+        android:textStyle="bold"
+         />
+
+    <EditText
+        android:id="@+id/editOriginalText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_below="@id/editTitle"
+        android:hint="@string/text_hint"
+        android:inputType="textMultiLine"
+        android:minHeight="250dp"
+        tools:text="@string/samplePoem" />
+
+    <EditText
+        android:id="@+id/editYear"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/editOriginalText"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:hint="@string/year_label"
+        android:inputType="number"
+        android:textStyle="italic" />
+
+    <Spinner
+        android:id="@+id/languagueSpinner"
+        android:layout_width="157dp"
+        android:layout_height="40dp"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/editOriginalText"
+        android:layout_marginBottom="60dp"
+        android:layout_marginStart="16dp"
+        android:paddingBottom="48dp"
+        tools:layout_editor_absoluteY="365dp" />
+
+
+    <Button
+        android:id="@+id/chancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/secondaryAction"
+        android:text="@string/chancel_button_label"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/saveButton" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/primaryAction"
+        android:text="@string/save_button_label"
+        android:textColor="@color/colorAccent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+
+        />
+
+
+</RelativeLayout>
+</ScrollView>
