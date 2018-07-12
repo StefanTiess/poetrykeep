@@ -58,5 +58,11 @@ die – Jahre des Werdens, Jahre der Wahne − heute die Stadt im Tale sehn.
     <string name="action_save">Save</string>
     <string name="action_delete">Delete Poem</string>
     <string name="action_edit">Edit</string>
+    <string name="unsaved_changes_dialog_msg">Do you want to discard all changes to this poem?</string>
+    <string name="discard">Yes!</string>
+    <string name="keep_editing">Keep editing</string>
+    <string name="deleting_warning_dialog_message">Do you really want to delete this poem?</string>
+    <string name="confirm_deletion">Yes, delete!</string>
+    <string name="abort_deletion">No, keep it!</string>
 
 </resources>

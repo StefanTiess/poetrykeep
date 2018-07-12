@@ -31,12 +31,6 @@ public class PoemsDatabaseHelper extends SQLiteOpenHelper {
                                 + PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME + " INTEGER NOT NULL DEFAULT 0);";
 
         db.execSQL(SQL_CREATE_ENTRIES);
-
-
-
-
-
-
     }
 
     public Poem makePoemFromFirstCursor(Cursor c) {

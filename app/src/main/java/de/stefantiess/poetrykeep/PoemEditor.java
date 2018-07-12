@@ -1,9 +1,11 @@
 package de.stefantiess.poetrykeep;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.res.Resources;
@@ -17,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -41,8 +44,16 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
     PoemsDatabaseHelper mPoemHelper;
     Uri currentUri = null;
     Boolean isNewPoem = true;
+    Boolean hasBeenChanged = false;
     int mID = 0;
     private static final int POEM_LOADER = 3;
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            hasBeenChanged = true;
+            return false;
+        }
+    };
 
 
     @Override
@@ -60,6 +71,12 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
         saveButton = findViewById(R.id.saveButton);
         chancelButton = findViewById(R.id.chancelButton);
         mPoemHelper = new PoemsDatabaseHelper(this);
+
+        editAuthor.setOnTouchListener(mTouchListener);
+        editTitle.setOnTouchListener(mTouchListener);
+        editPoemText.setOnTouchListener(mTouchListener);
+        editYear.setOnTouchListener(mTouchListener);
+
 
         Bundle intentExtras = getIntent().getExtras();
         if (intentExtras != null) {
@@ -87,7 +104,6 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: save Edits to Database
                 saveEntries();
             }
         });
@@ -95,16 +111,48 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
         chancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: confirmation popup if one of the textfields is not empty
 
-                // PopupWindow popupWindow = new PopupWindow();
+                if (hasBeenChanged) {
+                    DialogInterface.OnClickListener discardButtonClickListener =
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    // User clicked "Discard" button, close the current activity.
+                                    finish();
+                                }
+                            };
 
-                //Return without saving
-                finish();
+                    // Show dialog that there are unsaved changes
+                    showUnsavedChangesDialog(discardButtonClickListener);
+                } else {
+                    //Return without saving
+                    finish();
+                }
             }
         });
 
 
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (hasBeenChanged) {
+            DialogInterface.OnClickListener discardButtonClickListener =
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            // User clicked "Discard" button, close the current activity.
+                            finish();
+                        }
+                    };
+
+            // Show dialog that there are unsaved changes
+            showUnsavedChangesDialog(discardButtonClickListener);
+        } else {
+            super.onBackPressed();
+
+        }
     }
 
     public PoemEditor() {
@@ -166,18 +214,28 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
     private void deleteEntries() {
         if (isNewPoem) {
             finish();
-        }
-        else if (currentUri != null){
-            int affectedRows = getContentResolver().delete(currentUri, null, null);
-            if (affectedRows == 0) {
-                Toast.makeText(this,"Error updating Poem", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                Toast.makeText(this,"Poem deleted", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(this, MainActivity.class);
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
-            }
+        } else {
+            DialogInterface.OnClickListener discardButtonClickListener =
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            // User clicked "Discard" button, close the current activity.
+                            if (currentUri != null) {
+                                int affectedRows = getContentResolver().delete(currentUri, null, null);
+                                if (affectedRows == 0) {
+                                    Toast.makeText(getApplicationContext(), "Error updating Poem", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Poem deleted", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                }
+                            }
+                        }
+                    };
+
+            // Show dialog that there are unsaved changes
+            showUnsavedChangesDialog(discardButtonClickListener);
         }
     }
 
@@ -188,6 +246,50 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
         editYear.setText(String.valueOf(poem.getYear()));
         editLanguague.setSelection(poem.getLanguageID());
      }
+
+    private void showUnsavedChangesDialog(
+            DialogInterface.OnClickListener discardButtonClickListener) {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.unsaved_changes_dialog_msg);
+        builder.setPositiveButton(R.string.discard, discardButtonClickListener);
+        builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Keep editing" button, so dismiss the dialog
+                // and continue editing the poem.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void showDeletionWarningDialog(
+            DialogInterface.OnClickListener discardButtonClickListener) {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.deleting_warning_dialog_message);
+        builder.setPositiveButton(R.string.confirm_deletion, discardButtonClickListener);
+        builder.setNegativeButton(R.string.abort_deletion, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Keep editing" button, so dismiss the dialog
+                // and continue editing the poem.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
 
 
 
