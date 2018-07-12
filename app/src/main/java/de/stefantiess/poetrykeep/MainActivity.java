@@ -41,10 +41,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton addPoemButton = (FloatingActionButton) findViewById(R.id.add_poem);
+        FloatingActionButton addPoemButton = findViewById(R.id.add_poem);
         addPoemButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -150,17 +150,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) mCursorAdapter.getItem(position);
-                Poem p = poemsHelper.makePoemFromCursor(c);
-                int poemID = p.getID();
+                int poemID = c.getInt(c.getColumnIndexOrThrow(PoemEntry._ID));
                 Intent i = new Intent(getApplicationContext(), PoemView.class);
                 i.putExtra("id", poemID);
-                i.putExtra("author",p.getAuthor());
-                i.putExtra("title", p.getTitle() );
-                i.putExtra("text", p.getPoemBody());
-                i.putExtra("year", p.getYear());
-
                 startActivity(i);
-
             }
         });
 

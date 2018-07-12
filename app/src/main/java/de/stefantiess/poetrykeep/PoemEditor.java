@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -208,7 +207,9 @@ public class PoemEditor extends AppCompatActivity implements LoaderManager.Loade
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if(data.getCount() > 0) {populateEditTextField(mPoemHelper.makePoemFromCursor(data));}
+        if (data.getCount() > 0) {
+            populateEditTextField(mPoemHelper.makePoemFromFirstCursor(data));
+        }
     }
 
     @Override

@@ -56,6 +56,7 @@ public class PoemView extends AppCompatActivity implements LoaderManager.LoaderC
     private void showPoem(Poem poem) {
         mAuthorView.setText(poem.getAuthor());
         mTitleView.setText(poem.getTitle());
+        setTitle(poem.getTitle());
         mTextBodyView.setText(poem.getPoemBody());
         String year = "(" + String.valueOf(poem.getYear()) + ")";
         if (year.length() > 3) {mYearView.setText(year);}
@@ -84,9 +85,7 @@ public class PoemView extends AppCompatActivity implements LoaderManager.LoaderC
             return true;
         }
 
-        if (id == R.id.action_delete) {
 
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -107,7 +106,9 @@ public class PoemView extends AppCompatActivity implements LoaderManager.LoaderC
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if(data.getCount() > 0) {showPoem(mPoemHelper.makePoemFromCursor(data));}
+        if (data.getCount() > 0) {
+            showPoem(mPoemHelper.makePoemFromFirstCursor(data));
+        }
     }
 
     @Override

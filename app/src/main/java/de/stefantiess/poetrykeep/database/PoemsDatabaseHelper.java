@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import de.stefantiess.poetrykeep.Poem;
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
@@ -38,7 +39,7 @@ public class PoemsDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public Poem makePoemFromCursor (Cursor c) {
+    public Poem makePoemFromFirstCursor(Cursor c) {
         Poem p = null;
         c.moveToFirst();
         try {
@@ -55,8 +56,32 @@ public class PoemsDatabaseHelper extends SQLiteOpenHelper {
             int language = c.getInt(c.getColumnIndexOrThrow(PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME));
             p = new Poem(id, author, title, text, year, language);
 
-        } finally {
-            // c.close();
+        } catch (NullPointerException e) {
+            Log.e("Database Helper", "Could not find Poem in Cursor: " + e.toString());
+        }
+
+        return p;
+    }
+
+    public Poem makePoemFromCursorOnPosition(Cursor c, int pos) {
+        Poem p = null;
+        c.moveToPosition(pos);
+        try {
+
+            int id = c.getInt(c.getColumnIndex(PoemEntry._ID));
+            String author = c.getString(c.getColumnIndex(PoemEntry.COLUMN_AUTHOR_NAME));
+            String title = c.getString(c.getColumnIndex(PoemEntry.COLUMN_ORIGINAL_TITLE_NAME));
+            String text = c.getString(c.getColumnIndex(PoemEntry.COLUMN_ORIGINAL_TEXTBODY_NAME));
+            int year = 0;
+            if (c.getColumnIndex(PoemEntry.COLUMN_PUBLICATION_YEAR_NAME) != -1) {
+                year = c.getInt(c.getColumnIndex(PoemEntry.COLUMN_PUBLICATION_YEAR_NAME));
+            }
+
+            int language = c.getInt(c.getColumnIndexOrThrow(PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME));
+            p = new Poem(id, author, title, text, year, language);
+
+        } catch (NullPointerException e) {
+            Log.e("Database Helper", "Could not find Cursor at Position: " + e.toString());
         }
 
         return p;
