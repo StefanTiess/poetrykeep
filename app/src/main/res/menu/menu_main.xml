@@ -12,4 +12,14 @@
         android:orderInCategory="101"
         android:title="Add Dummy Poem"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/sync_with_firebase"
+        android:orderInCategory="102"
+        android:title="Migrate Database"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_syncWordpress"
+        android:orderInCategory="103"
+        android:title="@string/action_syncWordpress"
+        app:showAsAction="never" />
 </menu>

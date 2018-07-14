@@ -64,5 +64,9 @@ die – Jahre des Werdens, Jahre der Wahne − heute die Stadt im Tale sehn.
     <string name="deleting_warning_dialog_message">Do you really want to delete this poem?</string>
     <string name="confirm_deletion">Yes, delete!</string>
     <string name="abort_deletion">No, keep it!</string>
+    <string name="action_syncWordpress">SyncDatabase</string>
+    <string name="action_learn_mode">Learn Mode</string>
+    <string name="endLearnModeMessage">Learn Mode Ended</string>
+    <string name="startLearnModeMessage">Starting Learn Mode,Tap for new Line.</string>
 
 </resources>

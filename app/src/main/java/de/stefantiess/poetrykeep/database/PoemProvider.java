@@ -11,7 +11,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.util.HashMap;
+import java.util.Objects;
+
 import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
+
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
 
 import static de.stefantiess.poetrykeep.database.PoemContract.PATH_POEMS;
@@ -54,7 +58,7 @@ public class PoemProvider extends ContentProvider {
                 throw new IllegalArgumentException("Cannot query unknow uri " + uri);
         }
         //Set up change notification Watchdog
-        cursor.setNotificationUri(getContext().getContentResolver(),uri);
+        cursor.setNotificationUri(Objects.requireNonNull(getContext()).getContentResolver(), uri);
 
         return cursor;
     }
@@ -76,11 +80,11 @@ public class PoemProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
         int match = uriMatcher.match(uri);
         switch (match) {
             case POEMS:
-               return insertPoem(uri, values);
+
+                return insertPoem(uri, values);
             default: throw new IllegalArgumentException("Cannot query unknow uri " + uri);
         }
     }
@@ -89,18 +93,22 @@ public class PoemProvider extends ContentProvider {
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         int match = uriMatcher.match(uri);
-        int result = 0;
+        int result;
         switch (match) {
             case POEMS:
                 result= db.delete(PoemEntry.TABLE_NAME,selection,selectionArgs);
-                if (result != 0) {getContext().getContentResolver().notifyChange(uri, null);}
+                if (result != 0) {
+                    Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
+                }
                 return result;
 
             case POEM_ID:
                 selection = PoemEntry._ID + "=?";
                 selectionArgs = new String[] {String.valueOf(ContentUris.parseId(uri))};
                 result = db.delete(PoemEntry.TABLE_NAME,selection,selectionArgs);
-                if (result != 0) {getContext().getContentResolver().notifyChange(uri, null);}
+                if (result != 0) {
+                    Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
+                }
                 return result;
 
 
@@ -112,18 +120,20 @@ public class PoemProvider extends ContentProvider {
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
 
         int match = uriMatcher.match(uri);
-        int result = 0;
+        int result;
         switch (match) {
             case  POEMS:
                 result = updatePoem(values,selection, selectionArgs);
-                getContext().getContentResolver().notifyChange(uri, null);
+                Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
                 if (result != 0) {getContext().getContentResolver().notifyChange(uri, null);}
                 return result;
             case POEM_ID:
                 selection = PoemEntry._ID + "=?";
                 selectionArgs = new String[] {String.valueOf(ContentUris.parseId(uri))};
                 result = updatePoem(values,selection, selectionArgs);
-                if (result != 0) {getContext().getContentResolver().notifyChange(uri, null);}
+                if (result != 0) {
+                    Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
+                }
                 return result;
             default:   throw new IllegalArgumentException("Cannot delete unknown uri:" + uri);
         }
@@ -170,9 +180,10 @@ public class PoemProvider extends ContentProvider {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         Long id = db.insert(PoemEntry.TABLE_NAME,null, values);
 
+
         // If id is -1 that means something went wrong.
         if (id != -1) {
-            getContext().getContentResolver().notifyChange(uri, null);
+            Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
             return ContentUris.withAppendedId(uri,id);
 
         }

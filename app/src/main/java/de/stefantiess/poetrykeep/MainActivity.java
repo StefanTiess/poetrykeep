@@ -3,13 +3,17 @@ package de.stefantiess.poetrykeep;
 import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -30,7 +34,9 @@ import java.util.ArrayList;
 import de.stefantiess.poetrykeep.database.PoemCardCursorAdapter;
 import de.stefantiess.poetrykeep.database.PoemContract;
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
+import de.stefantiess.poetrykeep.database.PoemProvider;
 import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
+import de.stefantiess.poetrykeep.database.WordpressHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -81,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (id == R.id.add_dummy_data) {
             insertDummyData();
+        }
+
+        if (id == R.id.action_syncWordpress) {
+            syncDatabase();
         }
 
         return super.onOptionsItemSelected(item);
@@ -145,54 +155,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 
-/*
-    private ArrayList<Poem> getPoemsFromDatabase(@Nullable String orderby) {
-        ArrayList<Poem> poems = new ArrayList<>();
-
-        String[] projection = {PoemEntry._ID,
-                PoemEntry.COLUMN_AUTHOR_NAME,
-                PoemEntry.COLUMN_ORIGINAL_TITLE_NAME,
-                PoemEntry.COLUMN_ORIGINAL_TEXTBODY_NAME,
-                PoemEntry.COLUMN_PUBLICATION_YEAR_NAME,
-                PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME};
-
-
-        Cursor c = getContentResolver().query(PoemEntry.CONTENT_URI, projection,null,null,null);
-        try {
-            while (c.moveToNext()) {
-                int id = c.getInt(c.getColumnIndex(PoemEntry._ID));
-                String author = c.getString(c.getColumnIndex(PoemEntry.COLUMN_AUTHOR_NAME));
-                String title = c.getString(c.getColumnIndex(PoemEntry.COLUMN_ORIGINAL_TITLE_NAME));
-                String text = c.getString(c.getColumnIndex(PoemEntry.COLUMN_ORIGINAL_TEXTBODY_NAME));
-                int year = 0;
-                if (c.getColumnIndex(PoemEntry.COLUMN_PUBLICATION_YEAR_NAME) != -1) {
-                    year = c.getInt(c.getColumnIndex(PoemEntry.COLUMN_PUBLICATION_YEAR_NAME));
-                }
-
-                int language = c.getInt(c.getColumnIndexOrThrow(PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME));
-                poems.add(new Poem(id, author, title, text, year, language));
-            }
-        } finally {
-        }
-
-        return poems;
-    }
-
-    private Cursor getPoemsCursorFromDatabase(@Nullable String orderby) {
-
-        String[] projection = {PoemEntry._ID,
-                PoemEntry.COLUMN_AUTHOR_NAME,
-                PoemEntry.COLUMN_ORIGINAL_TITLE_NAME,
-                PoemEntry.COLUMN_ORIGINAL_TEXTBODY_NAME,
-                PoemEntry.COLUMN_PUBLICATION_YEAR_NAME,
-                PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME};
-
-
-       Cursor c = getContentResolver().query(PoemEntry.CONTENT_URI, projection,null,null,null);
-        return c;
-    }
-*/
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {PoemEntry._ID,
@@ -215,4 +177,48 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         mCursorAdapter.swapCursor(null);
 
     }
+
+
+    private void syncDatabase() {
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = null;
+        try {
+            activeNetwork = cm.getActiveNetworkInfo();
+        } catch (NullPointerException e) {
+            Log.e("Active Network Info", "" + e);
+        }
+        if (activeNetwork.isConnectedOrConnecting()) {
+
+            BackgroundSync sync = new BackgroundSync();
+            PoemProvider p = new PoemProvider();
+            sync.execute(getContentResolver());
+        } else {
+            Toast.makeText(this, "No Internet, Fool!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private class BackgroundSync extends AsyncTask<ContentResolver, Void, Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(ContentResolver... provider) {
+
+            WordpressHelper helper = new WordpressHelper(provider[0]);
+            return helper.syncDatabase();
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+            if (result) {
+                Toast.makeText(getApplicationContext(), "Sync Sucessfull", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Sync Failed, sorrey!", Toast.LENGTH_SHORT).show();
+
+            }
+        }
+    }
+
+
 }

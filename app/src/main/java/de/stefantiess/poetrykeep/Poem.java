@@ -17,6 +17,7 @@ public class Poem {
         mId = id;
     }
 
+
     public Poem(int id, String author, String title, String poemBody, int languageID) {
         mAuthor = author;
         mTitle = title;
