@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     PoemsDatabaseHelper poemsHelper;
     private static final int POEM_LOADER = 1;
     PoemCardCursorAdapter mCursorAdapter;
+    PoetRecyclerViewAdapter mPoetAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,11 +138,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void populateLatestPoemsList() {
         mCursorAdapter = new PoemCardCursorAdapter(this, null);
-        final ListView container = findViewById(R.id.poems_container);
-        container.setEmptyView(findViewById(R.id.empty_view));
-        container.setDivider(null);
-        container.setAdapter(mCursorAdapter);
-        container.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        final ListView PoemListContainer = findViewById(R.id.poems_container);
+        PoemListContainer.setEmptyView(findViewById(R.id.empty_view));
+        PoemListContainer.setDivider(null);
+        PoemListContainer.setAdapter(mCursorAdapter);
+        PoemListContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) mCursorAdapter.getItem(position);
@@ -149,6 +152,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(i);
             }
         });
+        //todo: Complete list Touch behaviour and adapter invocation;
+        /*
+        final RecyclerView PoetContainerView = findViewById(R.id.poet_container);
+
+        mPoetAdapter = new PoetRecyclerViewAdapter();
+        PoetContainerView.setAdapter(mPoetAdapter);
+        PoetContainerView.OnItemTouchListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor c = (Cursor) .getItem(position);
+                int poemID = c.getInt(c.getColumnIndexOrThrow(PoemEntry._ID));
+                Intent i = new Intent(getApplicationContext(), PoemView.class);
+                i.putExtra("id", poemID);
+                startActivity(i);
+            }
+        });*/
+
 
 
 

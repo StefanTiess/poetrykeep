@@ -28,7 +28,7 @@ public class WordpressHelper {
 
     private static final String BASE_URL = "http://poetrykeep.stefantiess.de/wp-json/wp/v2/";
     private static final String PARAMETER_GET_ALL_POSTS = "posts/";
-    private static final String TAG = WordpressHelper.class.getSimpleName();
+    private static final String TAG = "Wordpress Helper";
     private ContentResolver mresolver;
 
 
@@ -46,22 +46,24 @@ public class WordpressHelper {
             Response response = client.newCall(request).execute();
             if (response.body() != null) {
                 responseString = response.body().string();
+            } else {
+                Log.e(TAG, "Response Body from API Request is null");
             }
         } catch (IOException e) {
-            Log.e("Database Helper", "Connection Error: " + e.toString());
+            Log.e(TAG, "Connection Error: " + e.toString());
             return false;
         } catch (NullPointerException e) {
-            Log.e("Database Helper", "Null Pointer Exception: " + e.toString());
+            Log.e(TAG, "Null Pointer Exception: " + e.toString());
         }
         JSONArray json;
         try {
             json = new JSONArray(responseString);
         } catch (JSONException e) {
-            Log.e("Database Helper: ", "Error parsing JSON response: " + e.toString());
+            Log.e(TAG, "Error parsing JSON response: " + e.toString());
             return false;
         }
         if (json == null) {
-            Log.e("Database Helper", "Response JSON has null value");
+            Log.e(TAG, "Response JSON has null value");
             return false;
         }
         ArrayList<Poem> poems = fetchPoemsFromJsonResponse(json);
@@ -172,8 +174,8 @@ public class WordpressHelper {
                 String author = item.getJSONObject("acf").getString("author");
                 String title = item.getJSONObject("title").getString("rendered");
                 String textEnc = item.getJSONObject("content").getString("rendered");
-                textEnc = textEnc.replace("\n", "<br/>");
-                String text = Html.fromHtml(textEnc, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH).toString();
+                //textEnc = textEnc.replace("\n", "<br/>");
+                String text = Html.fromHtml(textEnc, Html.FROM_HTML_MODE_LEGACY).toString();
                 String language = item.getJSONObject("acf").getString("org_language");
                 String year = item.getJSONObject("acf").getString("year");
                 int lng;

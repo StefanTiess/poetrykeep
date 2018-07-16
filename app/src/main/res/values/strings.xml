@@ -68,5 +68,6 @@ die – Jahre des Werdens, Jahre der Wahne − heute die Stadt im Tale sehn.
     <string name="action_learn_mode">Learn Mode</string>
     <string name="endLearnModeMessage">Learn Mode Ended</string>
     <string name="startLearnModeMessage">Starting Learn Mode,Tap for new Line.</string>
+    <string name="filter_by_poets_label">Poems by Author</string>
 
 </resources>
