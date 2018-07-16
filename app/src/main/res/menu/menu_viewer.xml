@@ -5,6 +5,11 @@
     tools:context=".PoemView">
 
     <item
+        android:id="@+id/action_learnMode"
+        android:icon="@drawable/ic_brain"
+        android:title="@string/action_learn_mode"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_edit"
         android:title="@string/action_edit"
         android:icon="@drawable/ic_edit"
