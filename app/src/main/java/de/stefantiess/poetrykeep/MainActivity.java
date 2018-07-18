@@ -38,6 +38,7 @@ import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
 import de.stefantiess.poetrykeep.database.PoemProvider;
 import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
 import de.stefantiess.poetrykeep.database.WordpressHelper;
+import de.stefantiess.poetrykeep.ocr.OcrCaptureActivity;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -62,6 +63,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(i);
             }
         });
+
+        FloatingActionButton scanPoemButton = findViewById(R.id.add_poem_by_camera);
+        scanPoemButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getApplicationContext(), OcrCaptureActivity.class);
+                startActivity(i);
+            }
+        });
+
         poemsHelper = new PoemsDatabaseHelper(this);
 
        populateLatestPoemsList();

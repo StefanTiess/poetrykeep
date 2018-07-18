@@ -19,6 +19,20 @@
     <string name="empty_view_title_text">No Poems in your App!</string>
     <string name="empty_view_subtitle_text">Add new poems using the button below!</string>
 
+    //OCR Strings
+    <string name="ok">OK</string>
+    <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
+    <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
+    <string name="low_storage_error">Ocr dependencies cannot be downloaded due to low device storage</string>
+    <string name="title_activity_main">Ocr Detector Sample</string>
+    <string name="ocr_header">Click &quot;Detect Text&quot; to detect text</string>
+    <string name="read_text">Detect Text</string>
+    <string name="auto_focus">Auto Focus</string>
+    <string name="use_flash">Use Flash</string>
+    <string name="ocr_success">Text read successfully</string>
+    <string name="ocr_failure">No text captured</string>
+    <string name="ocr_error">"Error reading text: %1$s"</string>
+
     <string-array name="languages">
         <item name="de">@string/language_german</item>
         <item name="en">@string/language_english</item>
@@ -69,5 +83,6 @@ die – Jahre des Werdens, Jahre der Wahne − heute die Stadt im Tale sehn.
     <string name="endLearnModeMessage">Learn Mode Ended</string>
     <string name="startLearnModeMessage">Starting Learn Mode,Tap for new Line.</string>
     <string name="filter_by_poets_label">Poems by Author</string>
+    <string name="ocr_activity_label">Scan Poem</string>
 
 </resources>
