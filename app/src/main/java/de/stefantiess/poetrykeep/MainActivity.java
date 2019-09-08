@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     private void performQuery(String query) {
         selection = PoemEntry.COLUMN_AUTHOR_NAME + " like '%" + query + "%' OR " + PoemEntry.COLUMN_ORIGINAL_TITLE_NAME + " like '%" + query + "%'" ;
-        authorSelection = PoemEntry.COLUMN_AUTHOR_NAME + " LIKE '%" + query + "%'";
+        authorSelection = PoemEntry.COLUMN_AUTHOR_NAME + " like '%" + query + "%'";
         loaderManager.restartLoader(POEM_LOADER, null, this);
         loaderManager.restartLoader(AUTHOR_LOADER, null, this);
     }
@@ -287,7 +287,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 mPoemCursorAdapter.swapCursor(data);
                 break;
             case AUTHOR_LOADER:
-               // mAutorCursorAdapter.swapCursor(data);
                 mPoetRecyclerviewAdapter.swapCursor(data);
                 break;
 

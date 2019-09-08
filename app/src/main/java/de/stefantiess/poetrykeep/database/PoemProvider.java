@@ -64,7 +64,7 @@ public class PoemProvider extends ContentProvider {
                  cursor = db.query(PoemEntry.TABLE_NAME, projection,selection,selectionArgs,null,null,sortOrder);
                 break;
             case AUTHORS:
-                cursor = db.query(true,PoemEntry.TABLE_NAME,projection,null,null,PoemEntry.COLUMN_AUTHOR_NAME,null,sortOrder,null);
+                cursor = db.query(true,PoemEntry.TABLE_NAME,projection,selection,selectionArgs,PoemEntry.COLUMN_AUTHOR_NAME,null,sortOrder,null);
                 break;
             default:
                 throw new IllegalArgumentException("Cannot query unknow uri " + uri);
@@ -147,6 +147,7 @@ public class PoemProvider extends ContentProvider {
                     Objects.requireNonNull(getContext()).getContentResolver().notifyChange(uri, null);
                 }
                 return result;
+
             default:   throw new IllegalArgumentException("Cannot delete unknown uri:" + uri);
         }
 
