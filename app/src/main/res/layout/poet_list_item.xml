@@ -3,25 +3,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/poet_list_item"
     android:layout_width="wrap_content"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:gravity="center_horizontal"
+    android:padding="10dp"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/poet_icon_view"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="8dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_poet_circle" />
+    <TextView
+        android:id="@+id/poet_name_circle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:width="50dp"
+        android:height="50dp"
+        android:background="@drawable/circle"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:maxLines="3"
+        android:textAlignment="center"
+        android:textColor="#FFEBEE"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:typeface="normal"
+        tools:text="C B" />
 
     <TextView
         android:id="@+id/poet_name_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxWidth="112dp"
+        android:maxWidth="70dp"
+        android:maxLines="3"
         android:textAlignment="center"
-        tools:text="Charles Baudelaire" />
+        android:textSize="12sp"
+        tools:text="Johann Wolgang Goethe" />
 
 
 </LinearLayout>

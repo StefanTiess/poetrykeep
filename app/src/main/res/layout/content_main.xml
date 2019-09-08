@@ -13,16 +13,45 @@
         android:id="@+id/poet_slider_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="5dp"
         android:text="@string/filter_by_poets_label"
-        android:visibility="gone" />
+        />
 
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/poet_container"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="horizontal" />
+        android:orientation="horizontal"
+        android:divider="@color/colorPrimary"
+        android:showDividers="end">
+
+        <TextView
+            android:id="@+id/reset_poets_circle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:width="50dp"
+            android:height="50dp"
+            android:background="@drawable/circle"
+            android:backgroundTint="@color/colorPrimary"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:maxLines="3"
+            android:textAlignment="center"
+            android:textColor="#FFEBEE"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:typeface="normal"
+            android:text="Alle" />
+
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/authorlist_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+    </LinearLayout>
+
 
     <ListView
         android:id="@+id/poems_container"

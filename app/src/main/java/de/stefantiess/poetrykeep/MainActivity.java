@@ -2,22 +2,21 @@ package de.stefantiess.poetrykeep;
 
 import android.app.LoaderManager;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -25,13 +24,14 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import java.io.Console;
 
+import de.stefantiess.poetrykeep.database.AuthorSelectCursorAdapter;
 import de.stefantiess.poetrykeep.database.PoemCardCursorAdapter;
 import de.stefantiess.poetrykeep.database.PoemContract;
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
@@ -40,12 +40,19 @@ import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
 import de.stefantiess.poetrykeep.database.WordpressHelper;
 import de.stefantiess.poetrykeep.ocr.OcrCaptureActivity;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PoetRecyclerViewAdapter.OnAuthorClickListener {
 
     PoemsDatabaseHelper poemsHelper;
     private static final int POEM_LOADER = 1;
-    PoemCardCursorAdapter mCursorAdapter;
-    PoetRecyclerViewAdapter mPoetAdapter;
+    private static final int AUTHOR_LOADER = 2;
+    private static final int FILTERED_POEMS = 3;
+    PoemCardCursorAdapter mPoemCursorAdapter;
+    //AuthorSelectCursorAdapter mAutorCursorAdapter;
+    PoetRecyclerViewAdapter mPoetRecyclerviewAdapter;
+    RecyclerView mRecyclerView;
+    String selection = null;
+    String[] selectionArgs = null;
+    LoaderManager loaderManager;
 
 
     @Override
@@ -65,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         });
 
         FloatingActionButton scanPoemButton = findViewById(R.id.add_poem_by_camera);
+        scanPoemButton.setVisibility(View.GONE);
         scanPoemButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -73,10 +81,27 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
+        TextView authorReset = findViewById(R.id.reset_poets_circle);
+        authorReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                restartLoader();
+            }
+        });
+
         poemsHelper = new PoemsDatabaseHelper(this);
 
-       populateLatestPoemsList();
-       getLoaderManager().initLoader(POEM_LOADER, null, this);
+        loaderManager = getLoaderManager();
+        populateLatestPoemsList();
+        populateAuthorList();
+        loaderManager.initLoader(POEM_LOADER, null, this);
+        loaderManager.initLoader(AUTHOR_LOADER, null, this);
+
+    }
+
+    private void restartLoader() {
+        selection = null;
+        loaderManager.restartLoader(POEM_LOADER, null, this);
 
     }
 
@@ -148,64 +173,99 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void populateLatestPoemsList() {
-        mCursorAdapter = new PoemCardCursorAdapter(this, null);
+        mPoemCursorAdapter = new PoemCardCursorAdapter(this, null);
         final ListView PoemListContainer = findViewById(R.id.poems_container);
         PoemListContainer.setEmptyView(findViewById(R.id.empty_view));
         PoemListContainer.setDivider(null);
-        PoemListContainer.setAdapter(mCursorAdapter);
+        PoemListContainer.setAdapter(mPoemCursorAdapter);
         PoemListContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor c = (Cursor) mCursorAdapter.getItem(position);
+                Cursor c = (Cursor) mPoemCursorAdapter.getItem(position);
                 int poemID = c.getInt(c.getColumnIndexOrThrow(PoemEntry._ID));
                 Intent i = new Intent(getApplicationContext(), PoemView.class);
                 i.putExtra("id", poemID);
                 startActivity(i);
             }
         });
-        //todo: Complete list Touch behaviour and adapter invocation;
-        /*
-        final RecyclerView PoetContainerView = findViewById(R.id.poet_container);
 
-        mPoetAdapter = new PoetRecyclerViewAdapter();
-        PoetContainerView.setAdapter(mPoetAdapter);
-        PoetContainerView.OnItemTouchListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor c = (Cursor) .getItem(position);
-                int poemID = c.getInt(c.getColumnIndexOrThrow(PoemEntry._ID));
-                Intent i = new Intent(getApplicationContext(), PoemView.class);
-                i.putExtra("id", poemID);
-                startActivity(i);
-            }
-        });*/
+    }
 
 
+    private void populateAuthorList() {
 
+        mPoetRecyclerviewAdapter = new PoetRecyclerViewAdapter(this);
+        // bind view
+        mRecyclerView = findViewById(R.id.authorlist_view);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext(),LinearLayoutManager.HORIZONTAL,false);
+        // set layout manager
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        //set default animator
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setAdapter(mPoetRecyclerviewAdapter);
+    }
 
+    //ClickListener aus PoetRecyclerViewAdapter
+    @Override
+    public void onAuthorClick(int position) {
+        Cursor c = (Cursor) mPoetRecyclerviewAdapter.getItem(position);
+        String author = c.getString(c.getColumnIndexOrThrow(PoemEntry.COLUMN_AUTHOR_NAME));
+        selection = PoemEntry.COLUMN_AUTHOR_NAME + " like + '%" + author + "%'";
+        getLoaderManager().restartLoader(POEM_LOADER, null, this);
+
+        Log.v("MAIN",author);
     }
 
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String[] projection = {PoemEntry._ID,
-                PoemEntry.COLUMN_AUTHOR_NAME,
-                PoemEntry.COLUMN_ORIGINAL_TITLE_NAME,
-                PoemEntry.COLUMN_ORIGINAL_TEXTBODY_NAME,
-                PoemEntry.COLUMN_PUBLICATION_YEAR_NAME,
-                PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME};
+        String[] projection;
 
-        return new CursorLoader(this, PoemEntry.CONTENT_URI, projection,null,null,null);
+        switch (id) {
+            case POEM_LOADER:
+                projection = new String[]{PoemEntry._ID,
+                        PoemEntry.COLUMN_AUTHOR_NAME,
+                        PoemEntry.COLUMN_ORIGINAL_TITLE_NAME,
+                        PoemEntry.COLUMN_ORIGINAL_TEXTBODY_NAME,
+                        PoemEntry.COLUMN_PUBLICATION_YEAR_NAME,
+                        PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME};
+
+                return new CursorLoader(this, PoemEntry.CONTENT_URI, projection,selection,selectionArgs,null);
+
+            case AUTHOR_LOADER:
+                projection = new String [] {PoemEntry._ID,
+                        PoemEntry.COLUMN_AUTHOR_NAME};
+                return new CursorLoader(this, PoemEntry.AUTHORS_URI, projection,null,null,null);
+
+        }
+        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-       mCursorAdapter.swapCursor(data);
+        switch (loader.getId()) {
+            case POEM_LOADER:
+                mPoemCursorAdapter.swapCursor(data);
+                break;
+            case AUTHOR_LOADER:
+               // mAutorCursorAdapter.swapCursor(data);
+                mPoetRecyclerviewAdapter.swapCursor(data);
+                break;
+
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mCursorAdapter.swapCursor(null);
+        switch (loader.getId()) {
+            case POEM_LOADER:
+                mPoemCursorAdapter.swapCursor(null);
+                break;
+            case AUTHOR_LOADER:
+                mPoetRecyclerviewAdapter.swapCursor(null);
+                break;
+
+        }
 
     }
 
@@ -227,6 +287,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Toast.makeText(this, "No Internet, Fool!", Toast.LENGTH_LONG).show();
         }
     }
+
 
     private class BackgroundSync extends AsyncTask<ContentResolver, Void, Boolean> {
 

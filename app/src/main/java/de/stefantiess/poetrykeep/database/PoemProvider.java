@@ -19,17 +19,26 @@ import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
 
 import static de.stefantiess.poetrykeep.database.PoemContract.PATH_POEMS;
+import static de.stefantiess.poetrykeep.database.PoemContract.PATH_AUTHORS;
+
 
 public class PoemProvider extends ContentProvider {
     PoemsDatabaseHelper mDbHelper;
     public static final String LOG_TAG = PoemProvider.class.getSimpleName();
     private static final int POEMS = 100;
     private static final int POEM_ID = 101;
+    private static final int AUTHORS = 102;
+    private static final int POEM_AUTHOR = 103;
+
+
+
 
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
         uriMatcher.addURI(PoemContract.CONTENT_AUTHORITY, PATH_POEMS, POEMS);
         uriMatcher.addURI(PoemContract.CONTENT_AUTHORITY, PATH_POEMS + "/#", POEM_ID);
+        uriMatcher.addURI(PoemContract.CONTENT_AUTHORITY, PATH_AUTHORS, AUTHORS);
+
     }
 
 
@@ -53,6 +62,9 @@ public class PoemProvider extends ContentProvider {
                  selection = PoemEntry._ID + "=?";
                  selectionArgs = new String[] {String.valueOf(ContentUris.parseId(uri))};
                  cursor = db.query(PoemEntry.TABLE_NAME, projection,selection,selectionArgs,null,null,sortOrder);
+                break;
+            case AUTHORS:
+                cursor = db.query(true,PoemEntry.TABLE_NAME,projection,null,null,PoemEntry.COLUMN_AUTHOR_NAME,null,sortOrder,null);
                 break;
             default:
                 throw new IllegalArgumentException("Cannot query unknow uri " + uri);
