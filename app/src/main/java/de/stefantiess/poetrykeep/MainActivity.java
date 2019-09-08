@@ -1,9 +1,11 @@
 package de.stefantiess.poetrykeep;
 
 import android.app.LoaderManager;
+import android.app.SearchManager;
 import android.content.ContentResolver;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -18,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -40,27 +43,28 @@ import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
 import de.stefantiess.poetrykeep.database.WordpressHelper;
 import de.stefantiess.poetrykeep.ocr.OcrCaptureActivity;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PoetRecyclerViewAdapter.OnAuthorClickListener {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, PoetRecyclerViewAdapter.OnAuthorClickListener, SearchView.OnQueryTextListener {
 
     PoemsDatabaseHelper poemsHelper;
     private static final int POEM_LOADER = 1;
     private static final int AUTHOR_LOADER = 2;
-    private static final int FILTERED_POEMS = 3;
     PoemCardCursorAdapter mPoemCursorAdapter;
     //AuthorSelectCursorAdapter mAutorCursorAdapter;
     PoetRecyclerViewAdapter mPoetRecyclerviewAdapter;
     RecyclerView mRecyclerView;
     String selection = null;
+    String authorSelection = null;
     String[] selectionArgs = null;
     LoaderManager loaderManager;
+    SearchView searchView;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
 
         FloatingActionButton addPoemButton = findViewById(R.id.add_poem);
         addPoemButton.setOnClickListener(new View.OnClickListener() {
@@ -96,8 +100,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         populateAuthorList();
         loaderManager.initLoader(POEM_LOADER, null, this);
         loaderManager.initLoader(AUTHOR_LOADER, null, this);
-
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
     }
+
+
 
     private void restartLoader() {
         selection = null;
@@ -109,7 +116,39 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+
+
+        searchView = (SearchView) searchItem.getActionView();
+        searchView.setOnQueryTextListener(this);
+        searchView.clearFocus();
+
+
+
         return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        performQuery(query);
+        return true;
+    }
+
+    public boolean onQueryTextChange(String newText) {
+        // Called when the action bar search text has changed.  Update
+        // the search filter, and restart the loader to do a new query
+        // with this filter.
+        performQuery(newText);
+
+
+        return true;
+    }
+
+    private void performQuery(String query) {
+        selection = PoemEntry.COLUMN_AUTHOR_NAME + " like '%" + query + "%' OR " + PoemEntry.COLUMN_ORIGINAL_TITLE_NAME + " like '%" + query + "%'" ;
+        authorSelection = PoemEntry.COLUMN_AUTHOR_NAME + " LIKE '%" + query + "%'";
+        loaderManager.restartLoader(POEM_LOADER, null, this);
+        loaderManager.restartLoader(AUTHOR_LOADER, null, this);
     }
 
     @Override
@@ -235,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             case AUTHOR_LOADER:
                 projection = new String [] {PoemEntry._ID,
                         PoemEntry.COLUMN_AUTHOR_NAME};
-                return new CursorLoader(this, PoemEntry.AUTHORS_URI, projection,null,null,null);
+                return new CursorLoader(this, PoemEntry.AUTHORS_URI, projection,authorSelection,null,null);
 
         }
         return null;
@@ -287,6 +326,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Toast.makeText(this, "No Internet, Fool!", Toast.LENGTH_LONG).show();
         }
     }
+
+
 
 
     private class BackgroundSync extends AsyncTask<ContentResolver, Void, Boolean> {
