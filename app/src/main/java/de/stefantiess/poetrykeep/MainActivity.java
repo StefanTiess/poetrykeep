@@ -1,11 +1,8 @@
 package de.stefantiess.poetrykeep;
 
 import android.app.LoaderManager;
-import android.app.SearchManager;
 import android.content.ContentResolver;
-
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -23,23 +20,19 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.Console;
-
-import de.stefantiess.poetrykeep.database.AuthorSelectCursorAdapter;
 import de.stefantiess.poetrykeep.database.PoemCardCursorAdapter;
-import de.stefantiess.poetrykeep.database.PoemContract;
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
 import de.stefantiess.poetrykeep.database.PoemProvider;
 import de.stefantiess.poetrykeep.database.PoemsDatabaseHelper;
+import de.stefantiess.poetrykeep.database.PoetRecyclerViewAdapter;
 import de.stefantiess.poetrykeep.database.WordpressHelper;
 import de.stefantiess.poetrykeep.ocr.OcrCaptureActivity;
 
@@ -49,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final int POEM_LOADER = 1;
     private static final int AUTHOR_LOADER = 2;
     PoemCardCursorAdapter mPoemCursorAdapter;
-    //AuthorSelectCursorAdapter mAutorCursorAdapter;
     PoetRecyclerViewAdapter mPoetRecyclerviewAdapter;
     RecyclerView mRecyclerView;
     String selection = null;
@@ -247,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     //ClickListener aus PoetRecyclerViewAdapter
     @Override
     public void onAuthorClick(int position) {
-        Cursor c = (Cursor) mPoetRecyclerviewAdapter.getItem(position);
+        Cursor c = mPoetRecyclerviewAdapter.getItem(position);
         String author = c.getString(c.getColumnIndexOrThrow(PoemEntry.COLUMN_AUTHOR_NAME));
         selection = PoemEntry.COLUMN_AUTHOR_NAME + " like + '%" + author + "%'";
         getLoaderManager().restartLoader(POEM_LOADER, null, this);

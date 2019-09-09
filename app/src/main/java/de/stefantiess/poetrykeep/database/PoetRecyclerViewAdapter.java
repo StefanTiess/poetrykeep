@@ -1,4 +1,4 @@
-package de.stefantiess.poetrykeep;
+package de.stefantiess.poetrykeep.database;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -6,12 +6,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import de.stefantiess.poetrykeep.database.BaseCursorAdapter;
-import de.stefantiess.poetrykeep.database.PoemContract;
+import de.stefantiess.poetrykeep.R;
 
 
 public class PoetRecyclerViewAdapter extends BaseCursorAdapter<PoetRecyclerViewAdapter.AuthorHolder> {
