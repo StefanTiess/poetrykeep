@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     RecyclerView mRecyclerView;
     String selection = null;
     String authorSelection = null;
+    String sortPoems = null;
+    String sortAuthors = null;
     String[] selectionArgs = null;
     LoaderManager loaderManager;
     SearchView searchView;
@@ -85,8 +87,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        poemsHelper = new PoemsDatabaseHelper(this);
+        //Define Default Sortings
+        sortAuthors = PoemEntry.COLUMN_AUTHOR_NAME + " ASC";
+        sortPoems = PoemEntry.COLUMN_ORIGINAL_TITLE_NAME + " ASC";
 
+        poemsHelper = new PoemsDatabaseHelper(this);
         loaderManager = getLoaderManager();
         populateLatestPoemsList();
         populateAuthorList();
@@ -261,12 +266,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                         PoemEntry.COLUMN_PUBLICATION_YEAR_NAME,
                         PoemEntry.COLUMN_ORIGINAL_LANGUAGE_NAME};
 
-                return new CursorLoader(this, PoemEntry.CONTENT_URI, projection,selection,selectionArgs,null);
+                return new CursorLoader(this, PoemEntry.CONTENT_URI, projection, selection, selectionArgs, sortPoems);
 
             case AUTHOR_LOADER:
                 projection = new String [] {PoemEntry._ID,
                         PoemEntry.COLUMN_AUTHOR_NAME};
-                return new CursorLoader(this, PoemEntry.AUTHORS_URI, projection,authorSelection,null,null);
+                return new CursorLoader(this, PoemEntry.AUTHORS_URI, projection, authorSelection, null, sortAuthors);
 
         }
         return null;
