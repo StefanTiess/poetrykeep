@@ -180,10 +180,6 @@ public class PoemProvider extends ContentProvider {
         if (values.size() == 0) {
             return 0;
         }
-
-
-
-
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         return db.update(PoemEntry.TABLE_NAME,values,selection,selectionArgs);
 

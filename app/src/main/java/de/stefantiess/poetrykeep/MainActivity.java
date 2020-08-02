@@ -106,41 +106,39 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void restartLoader() {
         selection = null;
         loaderManager.restartLoader(POEM_LOADER, null, this);
-
+        loaderManager.restartLoader(AUTHOR_LOADER, null, this);
     }
 
+
+    // Handling the Toolbar Menu in Main view
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem searchItem = menu.findItem(R.id.action_search);
-
-
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(this);
+        searchView.setOnQueryTextListener(this); //listens to onQueryTextSubmit and onQueryTextChange
         searchView.clearFocus();
-
-
-
         return true;
     }
 
+    //Handles Search Inputs
     @Override
     public boolean onQueryTextSubmit(String query) {
         performQuery(query);
         return true;
     }
-
     public boolean onQueryTextChange(String newText) {
         // Called when the action bar search text has changed.  Update
         // the search filter, and restart the loader to do a new query
         // with this filter.
         performQuery(newText);
-
-
         return true;
     }
 
+    //Adds the query for poems as a partial match to Author or Title
+    //Adds the query for authors as a partial match to Author
+    //Restarts the loaders so they take the new selection into account
     private void performQuery(String query) {
         selection = PoemEntry.COLUMN_AUTHOR_NAME + " like '%" + query + "%' OR " + PoemEntry.COLUMN_ORIGINAL_TITLE_NAME + " like '%" + query + "%'" ;
         authorSelection = PoemEntry.COLUMN_AUTHOR_NAME + " like '%" + query + "%'";
@@ -342,6 +340,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             super.onPostExecute(result);
             if (result) {
                 Toast.makeText(getApplicationContext(), "Sync Sucessfull", Toast.LENGTH_SHORT).show();
+                restartLoader();
             } else {
                 Toast.makeText(getApplicationContext(), "Sync Failed, sorrey!", Toast.LENGTH_SHORT).show();
 
