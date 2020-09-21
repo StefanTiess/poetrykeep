@@ -234,9 +234,9 @@ public class WordpressHelper {
                 String author = String.valueOf(authorsList.get(authorID));
                 if (author == null) author = item.getJSONObject("acf").getString("author");
                 if (author == null) break;
-                String title = item.getJSONObject("title").getString("rendered");
+                String title = Html.fromHtml(item.getJSONObject("title").getString("rendered"),Html.FROM_HTML_MODE_LEGACY).toString();
                 String textEnc = item.getJSONObject("content").getString("rendered");
-                //textEnc = textEnc.replace("\n", "<br/>");
+                textEnc = textEnc.replace("\n", "");
                 String text = Html.fromHtml(textEnc, Html.FROM_HTML_MODE_LEGACY).toString();
                 String language = item.getJSONObject("acf").getString("org_language");
                 String year = item.getJSONObject("acf").getString("year");
