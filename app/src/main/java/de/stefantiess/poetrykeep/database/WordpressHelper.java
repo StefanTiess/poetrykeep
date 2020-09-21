@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.text.Html;
 import android.util.Log;
-
+import android.util.SparseArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +19,7 @@ import java.util.HashMap;
 
 import de.stefantiess.poetrykeep.Poem;
 import de.stefantiess.poetrykeep.database.PoemContract.PoemEntry;
+import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -27,9 +28,14 @@ import okhttp3.Response;
 public class WordpressHelper {
 
     private static final String BASE_URL = "http://poetrykeep.stefantiess.de/wp-json/wp/v2/";
-    private static final String PARAMETER_GET_ALL_POSTS = "posts/";
-    private static final String TAG = WordpressHelper.class.getSimpleName();
+    private static final String PARAMETER_GET_ALL_POSTS = "posts";
+    private static final String PARAMETER_GET_ALL_AUTHORS = "poet";
+    private static final String TAG = "Wordpress Helper";
+    JSONArray authorJSON = null;
+    SparseArray authorsList = new SparseArray();
     private ContentResolver mresolver;
+    private int totalPages = 0;
+    private int currentPage = 1;
 
 
     public WordpressHelper(ContentResolver provider) {
@@ -37,40 +43,11 @@ public class WordpressHelper {
     }
 
     public boolean syncDatabase() {
-        String url = BASE_URL + PARAMETER_GET_ALL_POSTS;
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder().url(url).build();
-        String responseString = "";
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.body() != null) {
-                responseString = response.body().string();
-            }
-        } catch (IOException e) {
-            Log.e("Database Helper", "Connection Error: " + e.toString());
-            return false;
-        } catch (NullPointerException e) {
-            Log.e("Database Helper", "Null Pointer Exception: " + e.toString());
-        }
-        JSONArray json;
-        try {
-            json = new JSONArray(responseString);
-        } catch (JSONException e) {
-            Log.e("Database Helper: ", "Error parsing JSON response: " + e.toString());
-            return false;
-        }
-        if (json == null) {
-            Log.e("Database Helper", "Response JSON has null value");
-            return false;
-        }
-        ArrayList<Poem> poems = fetchPoemsFromJsonResponse(json);
-        ArrayList<Integer> poemIDsForUpload = null;
-        if (poems.size() > 0) {
-            addNewPoemsToLocalDB(poems);
-            poemIDsForUpload = findPoemsForUpload(poems);
-        }
+        getAuthorList();
+        getAllPoems();
         //Todo Upload Poems
+        Log.d("WordpressHelper", authorJSON.toString());
+
         /*
         try {
             uploadPoemsToWP(poemIDsForUpload);
@@ -78,6 +55,85 @@ public class WordpressHelper {
 
         }*/
         return true;
+    }
+
+    private void getAuthorList() {
+        String url = BASE_URL + PARAMETER_GET_ALL_AUTHORS;
+        authorJSON = queryWorpressAPI(url);
+
+        for (int i = 0; i < authorJSON.length(); i++) {
+            try {
+                JSONObject item = authorJSON.getJSONObject(i);
+                authorsList.put(item.getInt("id"), item.getString("name"));
+
+
+            } catch (JSONException e) {
+                Log.e("Wordpress Helper", "Error Parsing AuthorJSON to AuthorList: " + e.toString());
+            }
+        }
+
+    }
+
+
+    private void getAllPoems() {
+        String url = BASE_URL + PARAMETER_GET_ALL_POSTS;
+        ArrayList<Poem> poems;
+
+        JSONArray json = queryWorpressAPI(url);
+        poems = fetchPoemsFromJsonResponse(json);
+        if (poems.size() > 0) {
+            addNewPoemsToLocalDB(poems);
+        }
+
+
+    }
+
+    private JSONArray queryWorpressAPI(String url) {
+        OkHttpClient client = new OkHttpClient();
+        //JSONArray for results;
+        JSONArray json = new JSONArray();
+        //Pagination defaults
+        currentPage = 1;
+        totalPages = 1;
+        while (currentPage <= totalPages) {
+            Request request = new Request.Builder().url(url + "?page=" + currentPage).build();
+            String responseString = "";
+            try {
+                Response response = client.newCall(request).execute();
+                if (response.body() != null) {
+                    responseString = response.body().string();
+                } else {
+                    Log.e(TAG, "Response Body from API Request is null");
+                }
+                if (response.headers() != null) {
+                    Headers headers = response.headers();
+                    totalPages = Integer.parseInt(headers.get("X-WP-TotalPages"));
+                    if (totalPages < 1) return null;
+
+                }
+
+            } catch (IOException e) {
+                Log.e(TAG, "Connection Error: " + e.toString());
+                return null;
+            } catch (NullPointerException e) {
+                Log.e(TAG, "Null Pointer Exception: " + e.toString());
+            }
+
+            try {
+                JSONArray partialArray = new JSONArray(responseString);
+                if (partialArray.length() > 0) {
+                    for (int i = 0; i < partialArray.length(); i++) {
+                        json.put(partialArray.getJSONObject(i));
+                    }
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, "Error parsing JSON response: " + e.toString());
+                return null;
+            }
+            currentPage++;
+
+        }
+        return json;
     }
 
     private void uploadPoemsToWP(ArrayList<Integer> poemIDsForUpload) {
@@ -95,7 +151,9 @@ public class WordpressHelper {
                 c.moveToFirst();
                 //TODO handle upload of poem;
             }
-            c.close();
+            if (c != null) {
+                c.close();
+            }
 
         }
     }
@@ -129,7 +187,9 @@ public class WordpressHelper {
 
 
             }
-            c.close();
+            if (c != null) {
+                c.close();
+            }
         }
     }
 
@@ -169,11 +229,15 @@ public class WordpressHelper {
         for (int i = 0; i < json.length(); i++) {
             try {
                 JSONObject item = json.getJSONObject(i);
-                String author = item.getJSONObject("acf").getString("author");
+                //try to get the author either from taxonomy or author field.
+                int authorID = item.getJSONArray("poet").getInt(0);
+                String author = String.valueOf(authorsList.get(authorID));
+                if (author == null) author = item.getJSONObject("acf").getString("author");
+                if (author == null) break;
                 String title = item.getJSONObject("title").getString("rendered");
                 String textEnc = item.getJSONObject("content").getString("rendered");
-                textEnc = textEnc.replace("\n", "<br/>");
-                String text = Html.fromHtml(textEnc, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH).toString();
+                //textEnc = textEnc.replace("\n", "<br/>");
+                String text = Html.fromHtml(textEnc, Html.FROM_HTML_MODE_LEGACY).toString();
                 String language = item.getJSONObject("acf").getString("org_language");
                 String year = item.getJSONObject("acf").getString("year");
                 int lng;
@@ -225,8 +289,6 @@ public class WordpressHelper {
             return null;
         }
     }
-
-
 }
 
 

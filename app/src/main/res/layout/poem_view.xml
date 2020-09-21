@@ -49,8 +49,10 @@
                 android:layout_marginTop="16dp"
                 android:baselineAligned="false"
                 android:fontFamily="@font/adamina"
+                android:lineSpacingExtra="8sp"
                 android:minHeight="100dp"
                 android:minWidth="200dp"
+                android:textColor="@android:color/black"
                 android:textSize="16sp"
                 tools:text="TEXT Text" />
         </LinearLayout>

@@ -8,6 +8,7 @@ public class PoemContract {
     public static final String CONTENT_AUTHORITY = "de.stefantiess.poetrykeep";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String PATH_POEMS = "poems";
+    public static final String PATH_AUTHORS = "authors";
 
 
     public PoemContract() {
@@ -16,15 +17,20 @@ public class PoemContract {
     public static final class PoemEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_POEMS);
+        public static final Uri AUTHORS_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_AUTHORS);
 
         public static final String CONTENT_LIST_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_POEMS;
+        public static final String AUTHOR_LIST_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_AUTHORS;
 
         /**
          * The MIME type of the {@link #CONTENT_URI} for a single pet.
          */
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_POEMS;
+        public static final String AUTHOR_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_AUTHORS;
 
         public static final String TABLE_NAME = "poems";
 
